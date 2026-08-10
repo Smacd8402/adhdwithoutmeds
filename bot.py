@@ -34,10 +34,15 @@ def get_board(channel_id: int) -> Board | None:
     return loaded
 
 
+class NoBoardError(Exception):
+    """Raised when a command needs a board that doesn't exist yet in this channel."""
+    pass
+
+
 def get_or_error(channel_id: int) -> Board:
     board = get_board(channel_id)
     if board is None:
-        raise app_commands.AppCommandError(
+        raise NoBoardError(
             "There's no story board in this channel yet. Start one with `/storyboard start`."
         )
     return board
@@ -147,6 +152,27 @@ async def reset(interaction: discord.Interaction):
 
 
 bot.tree.add_command(group)
+
+
+@bot.tree.error
+async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    # Unwrap errors raised inside command bodies (discord.py wraps them in CommandInvokeError)
+    original = getattr(error, "original", error)
+
+    if isinstance(original, NoBoardError):
+        message = f"⚠️ {original}"
+    else:
+        message = f"⚠️ Something went wrong running that command: `{original}`"
+        print(f"Unhandled app command error: {error!r}")
+
+    try:
+        if interaction.response.is_done():
+            await interaction.followup.send(message, ephemeral=True)
+        else:
+            await interaction.response.send_message(message, ephemeral=True)
+    except discord.HTTPException:
+        pass
+
 
 if __name__ == "__main__":
     if not TOKEN:
