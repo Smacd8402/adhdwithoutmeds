@@ -151,6 +151,65 @@ async def reset(interaction: discord.Interaction):
     await interaction.response.send_message("🧹 Story board cleared for this channel.")
 
 
+@bot.tree.command(name="help", description="Explain how the story board bot works")
+async def help_command(interaction: discord.Interaction):
+    embed = discord.Embed(
+        title="📖 Story Board Bot",
+        description=(
+            "Turns this channel into a branching mind map for your story. "
+            "Anyone here can add to it — story **beats** (things that happen) "
+            "or **thoughts** (notes, questions, ideas) — attached to any existing node.\n\n"
+            "Each node gets a short **#ID** when created. Use that ID to attach "
+            "new nodes under it, edit it, or remove it."
+        ),
+        color=discord.Color.blurple(),
+    )
+    embed.add_field(
+        name="🆕 `/storyboard start title:\"...\"`",
+        value="Starts a fresh board in this channel. **Wipes any existing board here.**",
+        inline=False,
+    )
+    embed.add_field(
+        name="➕ `/storyboard add parent:<id> text:\"...\" type:beat/thought`",
+        value=(
+            "Adds a node under an existing node. `type` defaults to **beat** if left out.\n"
+            "📌 beat = a story/plot event (solid blue box)\n"
+            "💭 thought = a note, question, or idea (dashed amber box)"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="✏️ `/storyboard edit id:<id> text:\"...\"`",
+        value="Changes the text of an existing node.",
+        inline=False,
+    )
+    embed.add_field(
+        name="🗑️ `/storyboard remove id:<id> cascade:True/False`",
+        value=(
+            "Removes a node. By default its children reattach to its parent. "
+            "`cascade:True` deletes that entire branch instead."
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="🖼️ `/storyboard show`",
+        value="Renders the whole board as an image and posts it.",
+        inline=False,
+    )
+    embed.add_field(
+        name="📋 `/storyboard list`",
+        value="Text-only outline version — handy on mobile or for a quick read.",
+        inline=False,
+    )
+    embed.add_field(
+        name="🧹 `/storyboard reset`",
+        value="Deletes the board for this channel entirely. **Requires Manage Messages permission.**",
+        inline=False,
+    )
+    embed.set_footer(text="One board per channel · saved automatically after every change")
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
 bot.tree.add_command(group)
 
 
